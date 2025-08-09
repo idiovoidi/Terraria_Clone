@@ -120,6 +120,8 @@ const player = {
   width: 18,
   height: 34,
   onGround: false,
+  facing: 1,
+  anim: { time: 0, walk: 0, state: 'idle' },
 };
 
 // Camera
@@ -259,6 +261,8 @@ function update(dt) {
   const accel = player.onGround ? MOVE_ACCEL : AIR_ACCEL;
   if (left && !right) player.vx -= accel;
   if (right && !left) player.vx += accel;
+  if (left && !right) player.facing = -1;
+  if (right && !left) player.facing = 1;
   if (!(left ^ right)) player.vx *= FRICTION; // no input → slow down
   player.vx = Math.max(-MAX_RUN_SPEED, Math.min(MAX_RUN_SPEED, player.vx));
 
@@ -279,6 +283,11 @@ function update(dt) {
   player.y = resultY.y;
   if (resultY.hitY) player.vy = 0;
   player.onGround = resultY.grounded;
+
+  // Update animation state
+  if (window.PlayerAnim) {
+    window.PlayerAnim.update(player, dt);
+  }
 
   // Camera follow
   const marginX = camera.width * 0.3;
@@ -361,15 +370,10 @@ function draw() {
     }
   }
 
-  // Player
-  const px = Math.floor(player.x - camera.x - player.width / 2);
-  const py = Math.floor(player.y - camera.y - player.height / 2);
-  ctx.fillStyle = '#3b6cff';
-  ctx.fillRect(px, py, player.width, player.height);
-  // eyes
-  ctx.fillStyle = '#fff';
-  ctx.fillRect(px + 5, py + 10, 4, 4);
-  ctx.fillRect(px + 12, py + 10, 4, 4);
+  // Player (animated)
+  if (window.PlayerAnim) {
+    window.PlayerAnim.draw(ctx, player, camera);
+  }
 
   // Cursor highlight
   const hx = Math.floor(mouse.tx * TILE_SIZE - camera.x);
