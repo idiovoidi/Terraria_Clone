@@ -38,7 +38,12 @@
     const legSwing = state === 'run' ? Math.sin(t) * runAmp : 0;
     const armSwing = state === 'run' ? Math.sin(t + Math.PI) * runAmp : 0;
 
-    const idleBob = state === 'idle' ? Math.sin((player.anim?.time || 0) * 0.5) * 1.0 : 0;
+    // Idle bob: slow, subtle breathing-like motion
+    const IDLE_BOB_PERIOD_S = 3.5; // seconds per full cycle (slower = more natural)
+    const IDLE_BOB_AMPLITUDE = 0.75; // pixels (subtle)
+    const idleBob = state === 'idle'
+      ? Math.sin((player.anim?.time || 0) * (Math.PI * 2 / (60 * IDLE_BOB_PERIOD_S))) * IDLE_BOB_AMPLITUDE
+      : 0;
     const airBob = !player.onGround ? -2 : 0;
 
     ctx.save();
